@@ -27,8 +27,8 @@ double CountSalary(int, double);
 void BubbleSorting();
 void QuickSort(int, int);
 void HeapSort(int);
-void LinearSearch();
-void BinarySearch();
+void LinearSearch(Employee**, int&, int, int, double, bool);
+void BinarySearch(Employee**, int&, double);
 #pragma endregion
 
 #pragma region Чтение и Запись
@@ -147,10 +147,11 @@ void AddEmployee()
 void AddEmployee(Employee** foundStaff, int number_of_matches, Employee person)
 {
     Employee* newStaff = new Employee[number_of_matches];
-    for (int i = 0; i < number_of_matches - 1; i++)
-    {
-         newStaff[i] = *foundStaff[i];
-    }
+    if(number_of_matches != 1)
+        for (int i = 0; i < number_of_matches - 1; i++)
+        {
+             newStaff[i] = (*foundStaff)[i];
+        }
 
     newStaff[number_of_matches - 1] = person;
     
@@ -161,32 +162,20 @@ void AddEmployee(Employee** foundStaff, int number_of_matches, Employee person)
 }
 
 
-void FindEmployees()
-{
-    int action;
-    cout << "Выберите метод поиска Сотрудников:\n1 - Линейный\n2 - Бинарный\n";
-    cin >> action;
-    switch (action)
-    {
-    case 1:
-        LinearSearch();
-        break;
-    case 2:
-        BinarySearch();
-        break;
-    }
-}
 
 void ShowEmployees(Employee* staff, int amount_of_workers, bool foundEmployees)
 {
     string file_name = "Employees.txt";
 
     int action;
-    
-    cout << endl<< "Выберите способ вывода Сотрудников:\n1 - В порядке их добавления в список\n2 - Отсортированном виде (Метод пузырька)\n3 - В отсортированном виде (QuickSort)\n4 - В отсортированном виде (HeapSort)\n";
-    
+
+
     if (!foundEmployees)
+    {       
+        cout << endl << "Выберите способ вывода Сотрудников:\n1 - В порядке их добавления в список\n2 - Отсортированном виде (Метод пузырька)\n3 - В отсортированном виде (QuickSort)\n4 - В отсортированном виде (HeapSort)\n";
+
         cin >> action;
+    }
     else
         action = 5;
 
@@ -208,10 +197,15 @@ void ShowEmployees(Employee* staff, int amount_of_workers, bool foundEmployees)
         break;
     case 5: 
         file_name = "FoundEmployees.txt";
+        if (amount_of_workers == 0)
+        {
+            cout << endl << "Не было найдено ни одного сотрудника" << endl;
+            return;
+        }
         break;
     }
     
-    cout << setw(20) << "Имя" << '|' << setw(20) << "Фамилия" << '|' << setw(20) << "Отчество" << '|' << setw(20) << "Табельный номер" << '|' << setw(20) << "Отработанные часы" << '|' << setw(20) << "Почасовая ставка" << '|' << setw(20) << "Заработная плата" << '|' << endl;
+    cout << endl << setw(20) << "Имя" << '|' << setw(20) << "Фамилия" << '|' << setw(20) << "Отчество" << '|' << setw(20) << "Табельный номер" << '|' << setw(20) << "Отработанные часы" << '|' << setw(20) << "Почасовая ставка" << '|' << setw(20) << "Заработная плата" << '|' << endl ;
     for (int i = 0; i < amount_of_workers; i++)
     {
         cout << setw(20) << staff[i].name << '|' << setw(20) << staff[i].surname << '|' << setw(20) << staff[i].patronymic << '|' << setw(20) << staff[i].personnel_number << '|' << setw(20) << staff[i].work_hours << '|' << setw(20) << staff[i].hourly_rate << '|' << setw(20) << staff[i].salary << '|' << endl;
@@ -220,6 +214,32 @@ void ShowEmployees(Employee* staff, int amount_of_workers, bool foundEmployees)
     WriteEmployees(file_name, staff, amount_of_workers);
 }
 
+void FindEmployees()
+{
+    int action;
+    Employee* foundEmployees = new Employee[0];
+    int number_of_matches = 0;
+    cout << "Выберите метод поиска Сотрудников:\n1 - Линейный\n2 - Бинарный\n";
+    cin >> action;
+
+    double key;
+    cout << "Введите заработную плату: ";
+    cin >> key;
+
+    switch (action)
+    {
+    case 1:
+        LinearSearch(&foundEmployees, number_of_matches, 0, amount_of_workers, key, false);
+        break;
+    case 2:
+        BinarySearch(&foundEmployees, number_of_matches, key);
+        break;
+    }
+
+    ShowEmployees(foundEmployees, number_of_matches, true);
+
+    delete[] foundEmployees;
+}
 
 #pragma region Сохранение считанного из файла порядка сотрудников
 void TakeCopyOfStaff()
@@ -385,32 +405,28 @@ void HeapSort(int n)
 
 
 #pragma region Алгоритмы поиска
-void LinearSearch()
+void LinearSearch(Employee** foundEmployees, int &number_of_matches, int range_start, int range_end, double key, bool calledByBinarySearch)
 {
-    int number_of_matches = 0;
-    double key;
-    cin >> key;
-
-    Employee* foundEmployees = new Employee[0];
-    for (int i = 0; i < amount_of_workers; i++)
+    
+    for (int i = range_start; i < range_end; i++)
     {
+        if (calledByBinarySearch && staff[i].personnel_number == staff[(range_start + range_end) / 2].personnel_number)
+            continue;
+
         if (round(staff[i].salary * 10000)/10000 == round(key*10000)/10000)
         {
             number_of_matches++;
-            AddEmployee(&foundEmployees, number_of_matches, staff[i]);
+            AddEmployee(foundEmployees, number_of_matches, staff[i]);
         }
     }
-    ShowEmployees(foundEmployees, number_of_matches, true);
 }
 
 
-void BinarySearch()
+void BinarySearch(Employee** foundEmployees, int& number_of_matches, double key)
 {
 
-    double key;
-    cin >> key;
-
     QuickSort(0, amount_of_workers - 1);
+
 
     int left = 0;
     int right = amount_of_workers - 1;
@@ -419,15 +435,17 @@ void BinarySearch()
         int mid = (left + right) / 2;
         if (round(staff[mid].salary * 10000) / 10000 == round(key * 10000) / 10000)
         {
-            Employee foundEmployee = staff[mid];
-            ShowEmployees(&foundEmployee, 1, true);
-            return;
+            number_of_matches++;
+            AddEmployee(foundEmployees, number_of_matches, staff[mid]);
+            break;
         }
         else if (staff[mid].salary > key)
             right = mid - 1;
         else if (staff[mid].salary < key)
             left = mid + 1;
     }
-
+    if(number_of_matches != 0)
+        LinearSearch(foundEmployees, number_of_matches, left, right, key, true);
 }
+
 #pragma endregion
