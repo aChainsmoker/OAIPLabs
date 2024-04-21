@@ -83,6 +83,25 @@ void WriteEmployees(string file_name, Employee* staff, int amount_of_workers)
 }
 #pragma endregion
 
+#pragma region Сохранение считанного из файла порядка сотрудников
+void TakeCopyOfStaff()
+{
+    if (staffInInitialOrder != NULL)
+        delete[] staffInInitialOrder;
+    staffInInitialOrder = new Employee[amount_of_workers];
+    for (int i = 0; i < amount_of_workers; i++)
+    {
+        staffInInitialOrder[i] = staff[i];
+    }
+}
+void ResetStaffOrder()
+{
+    for (int i = 0; i < amount_of_workers; i++)
+    {
+        staff[i] = staffInInitialOrder[i];
+    }
+}
+#pragma endregion
 
 
 
@@ -162,7 +181,6 @@ void AddEmployee(Employee** foundStaff, int number_of_matches, Employee person)
 }
 
 
-
 void ShowEmployees(Employee* staff, int amount_of_workers, bool foundEmployees)
 {
     string file_name = "Employees.txt";
@@ -171,8 +189,8 @@ void ShowEmployees(Employee* staff, int amount_of_workers, bool foundEmployees)
 
 
     if (!foundEmployees)
-    {       
-        cout << endl << "Выберите способ вывода Сотрудников:\n1 - В порядке их добавления в список\n2 - Отсортированном виде (Метод пузырька)\n3 - В отсортированном виде (QuickSort)\n4 - В отсортированном виде (HeapSort)\n";
+    {
+        cout << endl << "Выберите способ вывода Сотрудников:\n1 - В порядке их добавления в список\n2 - Отсортированном по убыванию виде (Метод пузырька)\n3 - В отсортированном по возрастанию виде (QuickSort)\n4 - В отсортированном по возрастанию виде (HeapSort)\n";
 
         cin >> action;
     }
@@ -188,14 +206,14 @@ void ShowEmployees(Employee* staff, int amount_of_workers, bool foundEmployees)
         file_name = "Sorted_Employees.txt";
         break;
     case 3:
-        QuickSort(0, amount_of_workers-1);
+        QuickSort(0, amount_of_workers - 1);
         file_name = "Sorted_Employees.txt";
         break;
     case 4:
         HeapSort(amount_of_workers);
         file_name = "Sorted_Employees.txt";
         break;
-    case 5: 
+    case 5:
         file_name = "FoundEmployees.txt";
         if (amount_of_workers == 0)
         {
@@ -204,8 +222,8 @@ void ShowEmployees(Employee* staff, int amount_of_workers, bool foundEmployees)
         }
         break;
     }
-    
-    cout << endl << setw(20) << "Имя" << '|' << setw(20) << "Фамилия" << '|' << setw(20) << "Отчество" << '|' << setw(20) << "Табельный номер" << '|' << setw(20) << "Отработанные часы" << '|' << setw(20) << "Почасовая ставка" << '|' << setw(20) << "Заработная плата" << '|' << endl ;
+
+    cout << endl << setw(20) << "Имя" << '|' << setw(20) << "Фамилия" << '|' << setw(20) << "Отчество" << '|' << setw(20) << "Табельный номер" << '|' << setw(20) << "Отработанные часы" << '|' << setw(20) << "Почасовая ставка" << '|' << setw(20) << "Заработная плата" << '|' << endl;
     for (int i = 0; i < amount_of_workers; i++)
     {
         cout << setw(20) << staff[i].name << '|' << setw(20) << staff[i].surname << '|' << setw(20) << staff[i].patronymic << '|' << setw(20) << staff[i].personnel_number << '|' << setw(20) << staff[i].work_hours << '|' << setw(20) << staff[i].hourly_rate << '|' << setw(20) << staff[i].salary << '|' << endl;
@@ -213,6 +231,98 @@ void ShowEmployees(Employee* staff, int amount_of_workers, bool foundEmployees)
 
     WriteEmployees(file_name, staff, amount_of_workers);
 }
+
+#pragma region Удаление сотрудников
+void DeletingProcess(int number_of_matches, double salary )
+{
+    Employee* newStaff = new Employee[amount_of_workers - number_of_matches];
+    int j = 0;
+    for (int i = 0; i < amount_of_workers; i++)
+    {
+        if (staff[i].salary != salary)
+        {
+            newStaff[j] = staff[i];
+            j++;
+        }
+        else
+            continue;
+    }
+    delete[] staff;
+    staff = newStaff;
+}
+void DeletingProcess(string personnel_number)
+{
+    Employee* newStaff = new Employee[amount_of_workers - 1];
+    int j = 0;
+    for (int i = 0; i < amount_of_workers; i++)
+    {
+        
+        if (staff[i].personnel_number != personnel_number)
+        {
+            newStaff[j] = staff[i];
+            j++;
+        }
+        else
+            continue;
+    }
+    delete[] staff;
+
+    staff = newStaff;
+}
+
+void DeleteEmployees()
+{
+    Employee* foundEmployees = new Employee[0];
+    int  number_of_matches = 0;
+    double salary;
+
+    cout << "Введите зарплату сотрудника, которого вы хотите удалить: ";
+    cin >> salary;
+
+
+    BinarySearch(&foundEmployees, number_of_matches, salary);
+    ResetStaffOrder();
+    
+    if (number_of_matches > 1)
+    {
+        cout << "Было найдено несколько сотрудников с введённой заработной платой:\n";
+        ShowEmployees(foundEmployees, number_of_matches, true);
+
+        cout << "Хотите удалить всех или только одного?\n 1 - Всех\n 2 - Одного\n";
+
+        int action;
+        string personnel_number;
+        cin >> action;
+
+        switch (action)
+        {
+        case 1:
+            DeletingProcess(number_of_matches, salary);
+            break;
+        case 2:
+            cout << "Введите табельный номер сотрудника: ";
+            cin >> personnel_number;
+            DeletingProcess(personnel_number);
+            number_of_matches = 1;
+            break;
+        default:
+            break;
+        }
+    }
+    else if (number_of_matches == 1)
+        DeletingProcess(foundEmployees[0].personnel_number);
+    else
+    {
+        cout << "Не было найдено сотрудников с такой заработной платой\n";
+        return;
+    }
+    amount_of_workers -= number_of_matches;
+    delete[] foundEmployees;
+    TakeCopyOfStaff();
+}
+#pragma endregion
+
+
 
 void FindEmployees()
 {
@@ -241,25 +351,6 @@ void FindEmployees()
     delete[] foundEmployees;
 }
 
-#pragma region Сохранение считанного из файла порядка сотрудников
-void TakeCopyOfStaff()
-{
-    if (staffInInitialOrder != NULL)
-        delete[] staffInInitialOrder;
-    staffInInitialOrder = new Employee[amount_of_workers];
-    for (int i = 0; i < amount_of_workers; i++)
-    {
-        staffInInitialOrder[i] = staff[i];
-    }
-}
-void ResetStaffOrder()
-{
-    for (int i = 0; i < amount_of_workers; i++)
-    {
-        staff[i] = staffInInitialOrder[i];
-    }
-}
-#pragma endregion
 
 int main()
 {
@@ -275,7 +366,7 @@ int main()
 
     while (true)
     {
-        cout << "\nВведите номер действия:\n1 - Добавить Работника\n2 - Вывести список сотрудников\n3 - Найти Работника по заработной плате\n0 - Завершить программу\n";
+        cout << "\nВведите номер действия:\n1 - Добавить Сотрудника\n2 - Удалить сотрудника\n3 - Вывести список сотрудников\n4 - Найти Работника по заработной плате\n0 - Завершить программу\n";
         cin >> action;
         switch (action)
         {
@@ -284,10 +375,15 @@ int main()
             TakeCopyOfStaff();
             break;
         case 2:
+            DeleteEmployees();
             ShowEmployees(staff, amount_of_workers, false);
             ResetStaffOrder();
             break;
         case 3:
+            ShowEmployees(staff, amount_of_workers, false);
+            ResetStaffOrder();
+            break;
+        case 4:
             FindEmployees();
             ResetStaffOrder();
             break;
@@ -310,7 +406,7 @@ void BubbleSorting()
     {
         for (int j = i + 1; j < amount_of_workers; j++)
         {
-            if (staff[i].salary > staff[j].salary)
+            if (staff[i].salary < staff[j].salary)
             {
                 Employee r;
                 r = staff[i];
@@ -433,7 +529,7 @@ void BinarySearch(Employee** foundEmployees, int& number_of_matches, double key)
     while (left <= right)
     {
         int mid = (left + right) / 2;
-        if (round(staff[mid].salary * 10000) / 10000 == round(key * 10000) / 10000)
+        if (round(staff[mid].salary * 1000) / 1000 == round(key * 1000) / 1000)
         {
             number_of_matches++;
             AddEmployee(foundEmployees, number_of_matches, staff[mid]);
