@@ -123,6 +123,7 @@ double CountSalary(int hours, double rate)
     return salary*0.88;
 }
 
+#pragma region Добавление сотрудника
 void AddEmployee()
 {
     Employee person;
@@ -179,23 +180,19 @@ void AddEmployee(Employee** foundStaff, int number_of_matches, Employee person)
 
     *foundStaff = newStaff;
 }
+#pragma endregion
 
-
-void ShowEmployees(Employee* staff, int amount_of_workers, bool foundEmployees)
+void ShowEmployees(Employee* staff, int amount_of_workers, bool foundEmployees, string file_name, int action)
 {
-    string file_name = "Employees.txt";
 
-    int action;
+    
 
 
-    if (!foundEmployees)
+    if (foundEmployees)
     {
-        cout << endl << "Выберите способ вывода Сотрудников:\n1 - В порядке их добавления в список\n2 - Отсортированном по убыванию виде (Метод пузырька)\n3 - В отсортированном по возрастанию виде (QuickSort)\n4 - В отсортированном по возрастанию виде (HeapSort)\n";
-
-        cin >> action;
-    }
-    else
         action = 5;
+    }
+        
 
     switch (action)
     {
@@ -203,18 +200,14 @@ void ShowEmployees(Employee* staff, int amount_of_workers, bool foundEmployees)
         break;
     case 2:
         BubbleSorting();
-        file_name = "Sorted_Employees.txt";
         break;
     case 3:
         QuickSort(0, amount_of_workers - 1);
-        file_name = "Sorted_Employees.txt";
         break;
     case 4:
         HeapSort(amount_of_workers);
-        file_name = "Sorted_Employees.txt";
         break;
     case 5:
-        file_name = "FoundEmployees.txt";
         if (amount_of_workers == 0)
         {
             cout << endl << "Не было найдено ни одного сотрудника" << endl;
@@ -286,7 +279,7 @@ void DeleteEmployees()
     if (number_of_matches > 1)
     {
         cout << "Было найдено несколько сотрудников с введённой заработной платой:\n";
-        ShowEmployees(foundEmployees, number_of_matches, true);
+        ShowEmployees(foundEmployees, number_of_matches, true, "Employees.txt", 1);
 
         cout << "Хотите удалить всех или только одного?\n 1 - Всех\n 2 - Одного\n";
 
@@ -324,13 +317,11 @@ void DeleteEmployees()
 
 
 
-void FindEmployees()
+void FindEmployees(int action)
 {
-    int action;
+    
     Employee* foundEmployees = new Employee[0];
     int number_of_matches = 0;
-    cout << "Выберите метод поиска Сотрудников:\n1 - Линейный\n2 - Бинарный\n";
-    cin >> action;
 
     double key;
     cout << "Введите заработную плату: ";
@@ -346,7 +337,7 @@ void FindEmployees()
         break;
     }
 
-    ShowEmployees(foundEmployees, number_of_matches, true);
+    ShowEmployees(foundEmployees, number_of_matches, true, "FoundEmployees.txt", 5);
 
     delete[] foundEmployees;
 }
@@ -366,7 +357,7 @@ int main()
 
     while (true)
     {
-        cout << "\nВведите номер действия:\n1 - Добавить Сотрудника\n2 - Удалить сотрудника\n3 - Вывести список сотрудников\n4 - Найти Работника по заработной плате\n0 - Завершить программу\n";
+        cout << "\nВведите номер действия:\n1 - Добавить Сотрудника\n2 - Удалить сотрудника\n3 - Вывести список сотрудников в порядке их добавления в список\n4 - Вывести список сотрудников в отсортированном по убыванию виде (Метод пузырька)\n5 - Вывести список сотрудников в отсортированном по возрастанию виде (QuickSort)\n6 - Вывести список сотрудников в отсортированном по возрастанию виде (HeapSort)\n7 - Найти Сотрудника по заработной плате линейным способом\n8 - Найти Сотрудника по заработной плате бинарным способом\n0 - Завершить программу\n";
         cin >> action;
         switch (action)
         {
@@ -376,15 +367,31 @@ int main()
             break;
         case 2:
             DeleteEmployees();
-            ShowEmployees(staff, amount_of_workers, false);
+            ShowEmployees(staff, amount_of_workers, false, "Employees.txt", 1);
             ResetStaffOrder();
             break;
         case 3:
-            ShowEmployees(staff, amount_of_workers, false);
+            ShowEmployees(staff, amount_of_workers, false, "Employees.txt", 1);
             ResetStaffOrder();
             break;
         case 4:
-            FindEmployees();
+            ShowEmployees(staff, amount_of_workers, false, "Sorted_Employees.txt", 2);
+            ResetStaffOrder();
+            break;
+        case 5:
+            ShowEmployees(staff, amount_of_workers, false, "Sorted_Employees.txt", 3);
+            ResetStaffOrder();
+            break;
+        case 6:
+            ShowEmployees(staff, amount_of_workers, false, "Sorted_Employees.txt", 4);
+            ResetStaffOrder();
+            break;
+        case 7:
+            FindEmployees(1);
+            ResetStaffOrder();
+            break;
+        case 8:
+            FindEmployees(2);
             ResetStaffOrder();
             break;
 
@@ -446,7 +453,7 @@ void QuickSort(int start, int end)
         int pi = partition(start, end);
 
         // Рекурсивно сортируем элементы до и после опорного элемента
-        QuickSort(start, pi - 1); \
+        QuickSort(start, pi - 1); 
             QuickSort(pi + 1, end);
     }
 }
