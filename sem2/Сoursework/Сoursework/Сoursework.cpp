@@ -37,7 +37,18 @@ void ReadEmployees()
     ifstream file;
     string useless_str;
     file.open("Employees.txt");
-    file >> amount_of_workers;
+    //file >> amount_of_workers;
+
+    while (!file.eof())
+    {
+        file >> useless_str;
+        if (useless_str == "Имя:")
+            amount_of_workers++;
+    }
+
+    file.close();
+    file.open("Employees.txt");
+
     staff = new Employee[amount_of_workers];
     for (int i=0;i < amount_of_workers; i++ )
     {
@@ -68,7 +79,6 @@ void WriteEmployees(string file_name, Employee* staff, int amount_of_workers)
 {
     ofstream file;
     file.open(file_name);
-    file << amount_of_workers << endl;
     for (int i = 0; i < amount_of_workers; i++)
     {
         file << "Имя: " << staff[i].name << endl;
@@ -162,6 +172,8 @@ void AddEmployee()
     delete[] staff;
 
     staff = newStaff;
+
+    system("cls");
 }
 
 void AddEmployee(Employee** foundStaff, int number_of_matches, Employee person)
@@ -182,11 +194,10 @@ void AddEmployee(Employee** foundStaff, int number_of_matches, Employee person)
 }
 #pragma endregion
 
+
+
 void ShowEmployees(Employee* staff, int amount_of_workers, bool foundEmployees, string file_name, int action)
 {
-
-    
-
 
     if (foundEmployees)
     {
@@ -216,13 +227,15 @@ void ShowEmployees(Employee* staff, int amount_of_workers, bool foundEmployees, 
         break;
     }
 
+    
     cout << endl << setw(20) << "Имя" << '|' << setw(20) << "Фамилия" << '|' << setw(20) << "Отчество" << '|' << setw(20) << "Табельный номер" << '|' << setw(20) << "Отработанные часы" << '|' << setw(20) << "Почасовая ставка" << '|' << setw(20) << "Заработная плата" << '|' << endl;
     for (int i = 0; i < amount_of_workers; i++)
     {
         cout << setw(20) << staff[i].name << '|' << setw(20) << staff[i].surname << '|' << setw(20) << staff[i].patronymic << '|' << setw(20) << staff[i].personnel_number << '|' << setw(20) << staff[i].work_hours << '|' << setw(20) << staff[i].hourly_rate << '|' << setw(20) << staff[i].salary << '|' << endl;
     }
 
-    WriteEmployees(file_name, staff, amount_of_workers);
+    if(!foundEmployees)
+        WriteEmployees(file_name, staff, amount_of_workers);
 }
 
 #pragma region Удаление сотрудников
@@ -337,7 +350,7 @@ void FindEmployees(int action)
         break;
     }
 
-    ShowEmployees(foundEmployees, number_of_matches, true, "FoundEmployees.txt", 5);
+    ShowEmployees(foundEmployees, number_of_matches, true, "Employees.txt", 5);
 
     delete[] foundEmployees;
 }
@@ -357,7 +370,7 @@ int main()
 
     while (true)
     {
-        cout << "\nВведите номер действия:\n1 - Добавить Сотрудника\n2 - Удалить сотрудника\n3 - Вывести список сотрудников в порядке их добавления в список\n4 - Вывести список сотрудников в отсортированном по убыванию виде (Метод пузырька)\n5 - Вывести список сотрудников в отсортированном по возрастанию виде (QuickSort)\n6 - Вывести список сотрудников в отсортированном по возрастанию виде (HeapSort)\n7 - Найти Сотрудника по заработной плате линейным способом\n8 - Найти Сотрудника по заработной плате бинарным способом\n0 - Завершить программу\n";
+        cout << "\nВведите номер действия:\n1 - Добавить Сотрудника\n2 - Удалить сотрудника\n3 - Вывести список сотрудников в порядке их добавления в список\n4 - Вывести список сотрудников в отсортированном по возрастанию виде (Метод пузырька)\n5 - Вывести список сотрудников в отсортированном по убыванию виде (QuickSort)\n6 - Вывести список сотрудников в отсортированном по возрастанию виде (HeapSort)\n7 - Найти Сотрудника по заработной плате линейным способом\n8 - Найти Сотрудника по заработной плате бинарным способом\n9 - Индивидуальное задание\n0 - Завершить программу\n";
         cin >> action;
         switch (action)
         {
@@ -394,7 +407,10 @@ int main()
             FindEmployees(2);
             ResetStaffOrder();
             break;
-
+        case 9:
+            ShowEmployees(staff, amount_of_workers, false, "Sorted_Employees.txt", 4);
+            ResetStaffOrder();
+            break;
         default:
             WriteEmployees("Employees.txt", staff, amount_of_workers);
             delete[] staffInInitialOrder;
@@ -413,7 +429,7 @@ void BubbleSorting()
     {
         for (int j = i + 1; j < amount_of_workers; j++)
         {
-            if (staff[i].salary < staff[j].salary)
+            if (staff[i].salary > staff[j].salary)
             {
                 Employee r;
                 r = staff[i];
@@ -433,7 +449,7 @@ int partition(int start, int end)
     for (int j = start; j < end; ++j)
     {
         // Если текущий элемент меньше или равен опорному элементу
-        if (staff[j].salary <= pivot.salary)
+        if (staff[j].salary >= pivot.salary)
         {
             // Увеличиваем индекс меньшего элемента и меняем местами элементы
             ++i;
@@ -528,7 +544,7 @@ void LinearSearch(Employee** foundEmployees, int &number_of_matches, int range_s
 void BinarySearch(Employee** foundEmployees, int& number_of_matches, double key)
 {
 
-    QuickSort(0, amount_of_workers - 1);
+    HeapSort(amount_of_workers);
 
 
     int left = 0;
